@@ -1,0 +1,117 @@
+[gd_scene load_steps=10 format=2]
+
+[ext_resource path="res://HighlightBox/HighlightBox.tscn" type="PackedScene" id=1]
+[ext_resource path="res://monkey.glb" type="PackedScene" id=2]
+
+[sub_resource type="GDScript" id=4]
+script/source = "extends Camera
+
+export(float) var zoomStep : float = 2.0
+export(float) var minZoom : float = 4.0
+export(float) var maxZoom : float = 40.0
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed(\"zoom_in\"):
+		transform.origin.z = transform.origin.z - zoomStep
+	if event.is_action_pressed(\"zoom_out\"):
+		transform.origin.z = transform.origin.z + zoomStep
+		
+	transform.origin.z = clamp(transform.origin.z, minZoom, maxZoom)
+"
+
+[sub_resource type="CylinderMesh" id=5]
+
+[sub_resource type="CubeMesh" id=6]
+
+[sub_resource type="ProceduralSky" id=7]
+
+[sub_resource type="Environment" id=8]
+background_mode = 3
+background_sky = SubResource( 7 )
+background_color = Color( 0.301961, 0.407843, 0.462745, 1 )
+tonemap_mode = 4
+
+[sub_resource type="Animation" id=2]
+resource_name = "Demo"
+length = 10.0
+loop = true
+tracks/0/type = "transform"
+tracks/0/path = NodePath("CameraSpinner")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = PoolRealArray(  )
+tracks/1/type = "value"
+tracks/1/path = NodePath("CameraSpinner:rotation_degrees")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/keys = {
+"times": PoolRealArray( 0, 5, 10 ),
+"transitions": PoolRealArray( 1, 1, 1 ),
+"update": 0,
+"values": [ Vector3( -20, 0, 0 ), Vector3( -20, 180, 0 ), Vector3( -20, 360, 0 ) ]
+}
+
+[sub_resource type="Animation" id=3]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/path = NodePath("CameraSpinner:rotation_degrees")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/keys = {
+"times": PoolRealArray( 0 ),
+"transitions": PoolRealArray( 1 ),
+"update": 0,
+"values": [ Vector3( 0, 0, 0 ) ]
+}
+
+[node name="TestScene" type="Spatial"]
+
+[node name="monkey" parent="." instance=ExtResource( 2 )]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0 )
+
+[node name="HighlightBox" parent="monkey" instance=ExtResource( 1 )]
+parentMesh = NodePath("../Suzanne")
+
+[node name="CameraSpinner" type="Spatial" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0 )
+
+[node name="Camera" type="Camera" parent="CameraSpinner"]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 20 )
+script = SubResource( 4 )
+
+[node name="Cylinder" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 6, 1, 0 )
+mesh = SubResource( 5 )
+
+[node name="HighlightBox" parent="Cylinder" instance=ExtResource( 1 )]
+parentMesh = NodePath("..")
+
+[node name="Cube" type="MeshInstance" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -6, 1, 0 )
+mesh = SubResource( 6 )
+
+[node name="HighlightBox" parent="Cube" instance=ExtResource( 1 )]
+parentMesh = NodePath("..")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource( 8 )
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+autoplay = "Demo"
+anims/Demo = SubResource( 2 )
+anims/RESET = SubResource( 3 )
+
+[node name="HelpLabel" type="Label" parent="."]
+margin_left = 32.0
+margin_top = 32.0
+margin_right = 301.0
+margin_bottom = 46.0
+text = "Use the mouse wheel to zoom in and out."
+
+[editable path="monkey"]
